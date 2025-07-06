@@ -168,7 +168,7 @@ export default function Login() {
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?
           <Link
-            href={route("login")}
+            href={route("hotels.index")}
             className="ml-1 text-gradient font-medium hover:underline"
           >
             Login

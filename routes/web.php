@@ -9,7 +9,7 @@ use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('admintemplate');
 });
 
 // Auth routes
@@ -18,11 +18,11 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('loginForm');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
 // Protected routes using sanctum auth
 Route::group(['middleware' => ['auth']], function () {
     //Dashboard
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // Hotel routes
     Route::get('hotels', [HotelController::class, 'index'])->name('hotels.index');
@@ -42,8 +42,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::put('amenities/{amenity}', [AmenityController::class, 'update'])->name('amenities.update');
     Route::delete('amenities/{amenity}', [AmenityController::class, 'destroy'])->name('amenities.destroy');
 
-// Room Type routes
+    // Room Type routes
     Route::resource('room-types', RoomTypeController::class);
-// Review routes
+    // Review routes
     Route::resource('reviews', ReviewController::class);
 });

@@ -117,7 +117,7 @@ export default function Login() {
             href={route("register")}
             className="ml-1 text-gradient font-medium hover:underline"
           >
-            Login
+            Register
           </Link>
         </p>
       </div>
