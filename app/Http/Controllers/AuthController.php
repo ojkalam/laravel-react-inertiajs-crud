@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\BaseController;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
+use Inertia\Inertia;
 class AuthController extends BaseController
 {
     public function registerForm()
     {
-        return view("auth.register");
+        return Inertia::render("Auth/Register");
     }
     /**
      * Register a new user.
@@ -40,7 +39,7 @@ class AuthController extends BaseController
 
     public function loginForm()
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login');
     }
     /**
      * Login a new user.
