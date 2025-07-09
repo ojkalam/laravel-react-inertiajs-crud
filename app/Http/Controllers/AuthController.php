@@ -12,7 +12,7 @@ class AuthController extends BaseController
 {
     public function registerForm()
     {
-        return Inertia::render("Auth/Register");
+        return Inertia::render('Auth/Register');
     }
     /**
      * Register a new user.
@@ -49,20 +49,23 @@ class AuthController extends BaseController
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'email' => 'required|email',
+            //Consider validating password as well for enhanced security.
+            'email' => 'required|email', //Instead of 'name', validate 'email' and 'password' for standard authentication.
+            'password' => 'required',
         ]);
+
         if ($validator->fails()) {
             return redirect('/login')->withErrors($validator)->withInput(); //withInput option to keep old input
         }
-        if (Auth::attempt($validator->valildated())){
-            $request->session()->regenerate(); //Purpose: Generates a new session ID. //Why: To prevent session fixation attacks.
+
+        $credentials = $request->all();
+        if (Auth::attempt($credentials)) {
+            //Attempt authentication with email and password.
+            $request->session()->regenerate();
             return redirect()->intended('/dashboard');
         }
-        return back()->withErrors([
-            'email' => 'The provided credentails does not match our records.'
-        ]);
 
+        return back()->withErrors(['email' => 'Invalid credentials.']); //Generic error message for security.
     }
 
     public function logout(Request $request)
@@ -72,5 +75,5 @@ class AuthController extends BaseController
         $request->session()->regenerateToken(); //Purpose: Generates a new CSRF token. //Why: To prevent Cross-Site Request Forgery (CSRF) attacks.
         return redirect('/');
     }
-
+}
 }
