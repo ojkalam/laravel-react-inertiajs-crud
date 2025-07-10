@@ -1,6 +1,24 @@
 import GuestLayout from "@/layouts/GuestLayout";
 import { Link } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
+
 export default function Login() {
+  const { data, setData, post, processing, errors } = useForm({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    password_confirmation: "",
+  });
+
+  function handleChange(e) {
+    const { id, value } = e.target;
+    setData(id, value);
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    post("/register");
+  }
   return (
     <GuestLayout>
       {/* Header */}
@@ -26,12 +44,14 @@ export default function Login() {
 
       {/* Login Form */}
       <div className="bg-white rounded-2xl shadow-xl p-8 card-hover">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="input-group">
             <input
               id="name"
               name="name"
               type="name"
+              value={data.name}
+              onChange={handleChange}
               required
               className="input-field"
               placeholder=" "
@@ -39,6 +59,28 @@ export default function Login() {
             <label htmlFor="name" className="input-label">
               Full Name
             </label>
+            {errors.name && (
+              <div className="text-red-500 text-sm mt-1">{errors.name}</div>
+            )}
+          </div>
+
+          <div className="input-group">
+            <input
+              id="phone"
+              name="phone"
+              type="phone"
+              value={data.phone}
+              onChange={handleChange}
+              required
+              className="input-field"
+              placeholder=" "
+            />
+            <label htmlFor="phone" className="input-label">
+              Phone
+            </label>
+            {errors.phone && (
+              <div className="text-red-500 text-sm mt-1">{errors.phone}</div>
+            )}
           </div>
 
           {/* Email Input */}
@@ -47,6 +89,8 @@ export default function Login() {
               id="email"
               name="email"
               type="email"
+              value={data.email}
+              onChange={handleChange}
               required
               className="input-field"
               placeholder=" "
@@ -54,6 +98,9 @@ export default function Login() {
             <label htmlFor="email" className="input-label">
               Email Address
             </label>
+            {errors.email && (
+              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
+            )}
           </div>
 
           {/* Password Input */}
@@ -63,6 +110,8 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
+                value={data.password}
+                onChange={handleChange}
                 required
                 className="input-field pr-10"
                 placeholder=" "
@@ -70,6 +119,11 @@ export default function Login() {
               <label htmlFor="password" className="input-label">
                 Password
               </label>
+              {errors.password && (
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.password}
+                </div>
+              )}
               <button
                 type="button"
                 className="absolute right-0 top-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -102,7 +156,9 @@ export default function Login() {
               <input
                 id="password_confirmation"
                 name="password_confirmation"
-                type="password_confirmation"
+                type="password"
+                onChange={handleChange}
+                value={data.password_confirmation}
                 required
                 className="input-field pr-10"
                 placeholder=" "
@@ -110,8 +166,13 @@ export default function Login() {
               <label htmlFor="password_confirmation" className="input-label">
                 Confirm Password
               </label>
+              {errors.password_confirmation && (
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.password_confirmation}
+                </div>
+              )}
               <button
-                type="button"
+                type="submit"
                 className="absolute right-0 top-4 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg
@@ -159,9 +220,10 @@ export default function Login() {
           <button
             id="submitBtn"
             type="submit"
+            disabled={processing}
             className="btn-primary w-full py-3 px-4 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Sign In
+            {processing ? "Creating..." : "Register"}
           </button>
         </form>
         {/* Sign in Link */}

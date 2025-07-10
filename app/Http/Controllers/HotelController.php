@@ -6,25 +6,23 @@ use App\Models\Hotel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 class HotelController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\View\View
      */
     public function index()
     {
-        $data = Hotel::take(10)->get();
-        return view('hotels.index', compact('data'));
+        $data = Hotel::latest()->get();
+        return Inertia::render('Admin/Hotels/Index', ['hotels' => $data]);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function show($id)
     {
@@ -34,24 +32,15 @@ class HotelController extends Controller
             return Redirect::route('hotels.index')->with('error', 'Hotel not found.');
         }
 
-        return view('hotels.show', compact('hotel'));
+        return Inertia::render('Admin/Hotels/Show', ['hotel' => $hotel]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
+
     public function create()
     {
-        return view('hotel.create');
+        return Inertia::render('Admin/Hotels/Create');
     }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -69,7 +58,7 @@ class HotelController extends Controller
         }
 
         try {
-            $hotel = Hotel::create($validator->validated());
+            Hotel::create($validator->validated());
             return Redirect::route('hotels.index')->with('success', 'Hotel Created Successfully.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while creating the hotel: ' . $e->getMessage())->withInput();
@@ -80,7 +69,6 @@ class HotelController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function edit($id)
     {
@@ -90,7 +78,7 @@ class HotelController extends Controller
             return Redirect::route('hotels.index')->with('error', 'Hotel not found.');
         }
 
-        return view('hotels.edit', compact('hotel'));
+        return Inertia::render('Admin/Hotels/Edit', props: ['hotel' => $hotel]);
     }
 
     /**

@@ -24,13 +24,13 @@ class AuthController extends BaseController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => 'required|confirmed|min:8',
             'phone' => 'required|string|max:20',
         ]);
         if ($validator->fails()) {
-            return redirect('/register')->withErrors($validator)->withInput();
+            return redirect(to: '/register')->withErrors($validator)->withInput();
         }
-        $user = User::create($request->validated());
+        $user = User::create($request->all());
         Auth::login($user);
         $request->session()->regenerate();
         return redirect()->intended('/dashboard');
@@ -55,7 +55,7 @@ class AuthController extends BaseController
         ]);
 
         if ($validator->fails()) {
-            return redirect('/login')->withErrors($validator)->withInput(); //withInput option to keep old input
+            return back()->withErrors($validator)->withInput();
         }
 
         $credentials = $request->all();
@@ -73,7 +73,6 @@ class AuthController extends BaseController
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken(); //Purpose: Generates a new CSRF token. //Why: To prevent Cross-Site Request Forgery (CSRF) attacks.
-        return redirect('/');
+        return redirect('/login');
     }
-}
 }

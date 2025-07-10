@@ -1,5 +1,5 @@
-import Sidebar from "@/Admin/partials/navbar/Sidebar";
-import Topbar from "@/Admin/partials/navbar/Topbar";
+import Sidebar from "@/Components/partials/navbar/Sidebar";
+import Topbar from "@/Components/partials/navbar/Topbar";
 
 export default function AuthLayout({ children }) {
   return (

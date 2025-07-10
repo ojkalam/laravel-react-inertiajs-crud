@@ -1,6 +1,21 @@
-import { Link } from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import GuestLayout from "@/layouts/GuestLayout";
+
 export default function Login() {
+  const { data, setData, post, processing, errors } = useForm({
+    email: "",
+    password: "",
+  });
+
+  function handleChange(e) {
+    const { id, value } = e.target;
+    setData(id, value);
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    post("/login");
+  }
   return (
     <GuestLayout>
       {/* Header */}
@@ -26,13 +41,15 @@ export default function Login() {
 
       {/* Login Form */}
       <div className="bg-white rounded-2xl shadow-xl p-8 card-hover">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Email Input */}
           <div className="input-group">
             <input
               id="email"
               name="email"
               type="email"
+              value={data.email}
+              onChange={handleChange}
               required
               className="input-field"
               placeholder=" "
@@ -40,6 +57,9 @@ export default function Login() {
             <label htmlFor="email" className="input-label">
               Email Address
             </label>
+            {errors.email && (
+              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
+            )}
           </div>
 
           {/* Password Input */}
@@ -49,6 +69,8 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
+                value={data.password}
+                onChange={handleChange}
                 required
                 className="input-field pr-10"
                 placeholder=" "
@@ -82,6 +104,9 @@ export default function Login() {
                 </svg>
               </button>
             </div>
+            {errors.password && (
+              <div className="text-red-500 text-sm mt-1">{errors.password}</div>
+            )}
           </div>
 
           {/* Remember Me & Forgot Password */}
@@ -101,13 +126,14 @@ export default function Login() {
             </a>
           </div>
 
-          {/* Submit Button  */}
+          {/* Submit Button */}
           <button
             id="submitBtn"
             type="submit"
+            disabled={processing}
             className="btn-primary w-full py-3 px-4 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Sign In
+            {processing ? "Signing in..." : "Sign in"}
           </button>
         </form>
         {/* Sign in Link */}

@@ -1,6 +1,14 @@
-import { Link } from "@inertiajs/react";
+import { useState } from "react";
+import { Link, router } from "@inertiajs/react";
 
 export default function Topbar() {
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  function handleUserButton(e) {
+    setShowUserDropdown(!showUserDropdown);
+  }
+  function handleLogout() {
+    router.post("/logout");
+  }
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-between px-6 py-4">
@@ -70,54 +78,43 @@ export default function Topbar() {
           <div className="relative">
             <button
               id="userButton"
+              onClick={handleUserButton}
               className="flex items-center space-x-2 text-gray-700 hover:text-gray-900"
             >
-              <img
-                src="https://via.placeholder.com/32x32/374151/ffffff?text=A"
-                alt="User"
-                className="w-8 h-8 rounded-full"
-              />
               <span className="hidden md:block">Admin User</span>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
             </button>
 
             {/* User Dropdown */}
             <div
               id="userDropdown"
-              className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50`}
+              className={`absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 ${
+                !showUserDropdown && "hidden"
+              } z-50`}
             >
               <div className="py-2">
                 <a
                   href="#"
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
-                  Profile
+                  {" "}
+                  Profile{" "}
                 </a>
                 <a
                   href="#"
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
-                  Settings
+                  {" "}
+                  Settings{" "}
                 </a>
                 <div className="border-t border-gray-200 mt-2 pt-2">
-                  <a
+                  <button
+                    onClick={handleLogout}
                     href="#"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
-                    Sign Out
-                  </a>
+                    {" "}
+                    Sign Out{" "}
+                  </button>
                 </div>
               </div>
             </div>

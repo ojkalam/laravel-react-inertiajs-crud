@@ -18,16 +18,16 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('loginForm');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
 // Protected routes using sanctum auth
 Route::group(['middleware' => ['auth']], function () {
     //Dashboard
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // Hotel routes
     Route::get('hotels', [HotelController::class, 'index'])->name('hotels.index');
-    Route::get('hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
     Route::get('hotels/create', [HotelController::class, 'create'])->name('hotels.create');
+    Route::get('hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
     Route::post('hotels', [HotelController::class, 'store'])->name('hotels.store');
     Route::get('hotels/{id}/edit', [HotelController::class, 'edit'])->name('hotels.edit');
     Route::put('hotels/{id}', [HotelController::class, 'update'])->name('hotels.update');
@@ -35,8 +35,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Amenity routes with route model binding
     Route::get('amenities', [AmenityController::class, 'index'])->name('amenities.index');
+    Route::get('amenities/create', [AmenityController::class, 'create'])->name('amenities.create');
     Route::get('amenities/{amenity}', [AmenityController::class, 'show'])->name('amenities.show');
-    Route::get('amenities', [AmenityController::class, 'create'])->name('amenities.create');
     Route::post('amenities', [AmenityController::class, 'store'])->name('amenities.store');
     Route::get('amenities/{amenity}/edit', [AmenityController::class, 'edit'])->name('amenities.edit');
     Route::put('amenities/{amenity}', [AmenityController::class, 'update'])->name('amenities.update');
