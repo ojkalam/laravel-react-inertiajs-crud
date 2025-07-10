@@ -2,62 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRoomTypeRequest;
-use App\Http\Requests\UpdateRoomTypeRequest;
 use App\Models\RoomType;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
 class RoomTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function index(): View|RedirectResponse
+    public function index()
     {
-        try {
-            $roomTypes = RoomType::all();
-            return view('room_types.index', compact('roomTypes'));
-        } catch (\Exception $e) {
-            return Redirect::route('dashboard')->with('error', 'An error occurred while retrieving room types: ' . $e->getMessage());
-        }
+        $data = RoomType::with('hotel')->latest()->get();
+        return Inertia::render('Admin/RoomTypes/Index', ['room_types' => $data]);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\RoomType  $roomType
-     * @return \Illuminate\View\View
      */
-    public function show(RoomType $roomType): View
+    public function show(RoomType $roomType)
     {
-        return view('room_types.show', compact('roomType'));
+        $roomType->load('hotel');
+        return Inertia::render('Admin/RoomTypes/Show', ['room_type' => $roomType]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create(): View
+
+    public function create()
     {
-        return view('room_types.create');
+        $hotels = \App\Models\Hotel::all();
+        return Inertia::render('Admin/RoomTypes/Create', ['hotels' => $hotels]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreRoomTypeRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function store(StoreRoomTypeRequest $request): RedirectResponse
+    public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'hotel_id' => 'required|exists:hotels,id',
+            'type_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'max_occupancy' => 'required|integer|min:1',
+            'price_per_night' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+
         try {
-            RoomType::create($request->validated());
-            return Redirect::route('room_types.index')->with('success', 'Room type created successfully.');
+            RoomType::create($validator->validated());
+            return Redirect::route('room-types.index')->with('success', 'Room Type Created Successfully.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while creating the room type: ' . $e->getMessage())->withInput();
         }
@@ -67,41 +63,47 @@ class RoomTypeController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\RoomType  $roomType
-     * @return \Illuminate\View\View
      */
-    public function edit(RoomType $roomType): View
+    public function edit(RoomType $roomType)
     {
-        return view('room_types.edit', compact('roomType'));
+        $hotels = \App\Models\Hotel::all();
+        return Inertia::render('Admin/RoomTypes/Edit', ['room_type' => $roomType, 'hotels' => $hotels]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateRoomTypeRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\RoomType  $roomType
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateRoomTypeRequest $request, RoomType $roomType): RedirectResponse
+    public function update(Request $request, RoomType $roomType)
     {
+        $validator = Validator::make($request->all(), [
+            'hotel_id' => 'required|exists:hotels,id',
+            'type_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'max_occupancy' => 'required|integer|min:1',
+            'price_per_night' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+
         try {
-            $roomType->update($request->validated());
-            return Redirect::route('room_types.index')->with('success', 'Room type updated successfully.');
+            $roomType->update($validator->validated());
+            return Redirect::route('room-types.index')->with('success', 'Room Type Data Updated.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while updating the room type: ' . $e->getMessage())->withInput();
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\RoomType  $roomType
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(RoomType $roomType): RedirectResponse
+    public function destroy(RoomType $roomType)
     {
         try {
             $roomType->delete();
-            return Redirect::route('room_types.index')->with('success', 'Room type deleted successfully.');
+            return Redirect::route('room-types.index')->with('success', 'Room Type Deleted Successfully.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while deleting the room type: ' . $e->getMessage());
         }

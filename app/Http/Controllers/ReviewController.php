@@ -2,62 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreReviewRequest;
-use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Review;
+use App\Models\User;
+use App\Models\Hotel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function index(): View|RedirectResponse
+    public function index()
     {
-        try {
-            $reviews = Review::all();
-            return view('reviews.index', compact('reviews'));
-        } catch (\Exception $e) {
-            return Redirect::route('dashboard')->with('error', 'An error occurred while retrieving reviews: ' . $e->getMessage());
-        }
+        $data = Review::with(['user', 'hotel'])->latest()->get();
+        return Inertia::render('Admin/Reviews/Index', ['reviews' => $data]);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\Review  $review
-     * @return \Illuminate\View\View
      */
-    public function show(Review $review): View
+    public function show(Review $review)
     {
-        return view('reviews.show', compact('review'));
+        $review->load(['user', 'hotel']);
+        return Inertia::render('Admin/Reviews/Show', ['review' => $review]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create(): View
+
+    public function create()
     {
-        return view('reviews.create');
+        $users = \App\Models\User::all();
+        $hotels = \App\Models\Hotel::all();
+        return Inertia::render('Admin/Reviews/Create', ['users' => $users, 'hotels' => $hotels]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreReviewRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function store(StoreReviewRequest $request): RedirectResponse
+    public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'hotel_id' => 'required|exists:hotels,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+
         try {
-            Review::create($request->validated());
-            return Redirect::route('reviews.index')->with('success', 'Review created successfully.');
+            Review::create($validator->validated());
+            return Redirect::route('reviews.index')->with('success', 'Review Created Successfully.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while creating the review: ' . $e->getMessage())->withInput();
         }
@@ -67,41 +65,47 @@ class ReviewController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Review  $review
-     * @return \Illuminate\View\View
      */
-    public function edit(Review $review): View
+    public function edit(Review $review)
     {
-        return view('reviews.edit', compact('review'));
+        $users = \App\Models\User::all();
+        $hotels = \App\Models\Hotel::all();
+        return Inertia::render('Admin/Reviews/Edit', ['review' => $review, 'users' => $users, 'hotels' => $hotels]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateReviewRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Review  $review
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateReviewRequest $request, Review $review): RedirectResponse
+    public function update(Request $request, Review $review)
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'hotel_id' => 'required|exists:hotels,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+
         try {
-            $review->update($request->validated());
-            return Redirect::route('reviews.index')->with('success', 'Review updated successfully.');
+            $review->update($validator->validated());
+            return Redirect::route('reviews.index')->with('success', 'Review Data Updated.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while updating the review: ' . $e->getMessage())->withInput();
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Review  $review
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Review $review): RedirectResponse
+    public function destroy(Review $review)
     {
         try {
             $review->delete();
-            return Redirect::route('reviews.index')->with('success', 'Review deleted successfully.');
+            return Redirect::route('reviews.index')->with('success', 'Review Deleted Successfully.');
         } catch (\Exception $e) {
             return Redirect::back()->with('error', 'An error occurred while deleting the review: ' . $e->getMessage());
         }
