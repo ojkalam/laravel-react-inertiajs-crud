@@ -58,4 +58,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('notifications/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('notifications/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::get('notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show'])->name('notifications.show');
+
+    // Search route
+    Route::get('search', [App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
 });

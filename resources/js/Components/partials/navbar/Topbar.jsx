@@ -1,16 +1,40 @@
 import { useState, useEffect } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 
-export default function Topbar() {
+export default function Topbar({ toggleSidebar }) {
   const { auth } = usePage().props;
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+
+    const handleOutsideClick = (event) => {
+      if (
+        showUserDropdown &&
+        !event.target.closest("#userButton") &&
+        !event.target.closest("#userDropdown")
+      ) {
+        setShowUserDropdown(false);
+      }
+      if (
+        showNotificationDropdown &&
+        !event.target.closest("button.relative.text-gray-500") &&
+        !event.target.closest("div.absolute.right-0.mt-2.w-80")
+      ) {
+        setShowNotificationDropdown(false);
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [showUserDropdown, showNotificationDropdown]);
 
   function fetchNotifications() {
     fetch(route("notifications.index"))
@@ -62,12 +86,22 @@ export default function Topbar() {
     router.post("/logout");
   }
 
+  function handleSearchChange(event) {
+    setSearchQuery(event.target.value);
+  }
+
+  function handleSearchSubmit(event) {
+    if (event.key === "Enter") {
+      router.get(route("search.index"), { query: searchQuery });
+    }
+  }
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center">
           {/* <!-- Mobile menu button --> */}
-          <button className="lg:hidden text-gray-500 hover:text-gray-700 mr-4">
+          <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700 mr-4">
             <svg
               className="w-6 h-6"
               fill="none"
@@ -89,6 +123,9 @@ export default function Topbar() {
               type="text"
               placeholder="Search..."
               className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchSubmit}
             />
             <svg
               className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
@@ -110,6 +147,7 @@ export default function Topbar() {
           {/* <!-- Notifications --> */}
           <div className="relative">
             <button
+              id="notificationButton"
               onClick={handleNotificationButton}
               className="relative text-gray-500 hover:text-gray-700"
             >
@@ -135,6 +173,7 @@ export default function Topbar() {
 
             {/* Notification Dropdown */}
             <div
+              id="notificationDropdown"
               className={`absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 ${
                 !showNotificationDropdown && "hidden"
               } z-50`}

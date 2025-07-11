@@ -1,10 +1,10 @@
 import { Link } from "@inertiajs/react";
 
-export default function Sidebar({ siteTitle }) {
+export default function Sidebar({ siteTitle, isSidebarOpen }) {
   return (
     <div
       id="sidebar"
-      className={`fixed left-0 top-0 h-full w-64 bg-gray-800 text-white transform translate-x-0 transition-transform duration-300 ease-in-out lg:translate-x-0 z-30`}
+      className={`fixed left-0 top-0 h-full w-64 bg-gray-800 text-white transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out z-30`}
     >
       <div className="p-4 border-b border-gray-700">
         <h2 className="text-xl font-bold">{siteTitle}</h2>
