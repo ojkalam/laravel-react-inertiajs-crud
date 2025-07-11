@@ -1,13 +1,13 @@
 import { Link } from "@inertiajs/react";
 
-export default function Sidebar() {
+export default function Sidebar({ siteTitle }) {
   return (
     <div
       id="sidebar"
       className={`fixed left-0 top-0 h-full w-64 bg-gray-800 text-white transform translate-x-0 transition-transform duration-300 ease-in-out lg:translate-x-0 z-30`}
     >
       <div className="p-4 border-b border-gray-700">
-        <h2 className="text-xl font-bold">Hotel Reservation</h2>
+        <h2 className="text-xl font-bold">{siteTitle}</h2>
       </div>
 
       <nav className="mt-6">

@@ -1,14 +1,67 @@
-import { useState } from "react";
-import { Link, router } from "@inertiajs/react";
+import { useState, useEffect } from "react";
+import { Link, router, usePage } from "@inertiajs/react";
 
 export default function Topbar() {
+  const { auth } = usePage().props;
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  function handleUserButton(e) {
-    setShowUserDropdown(!showUserDropdown);
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  function fetchNotifications() {
+    fetch(route("notifications.index"))
+      .then((response) => response.json())
+      .then((data) => {
+        setNotifications(data.unreadNotifications.concat(data.readNotifications));
+        setUnreadCount(data.unreadNotifications.length);
+      })
+      .catch((error) => console.error("Error fetching notifications:", error));
   }
+
+  function handleUserButton() {
+    setShowUserDropdown(!showUserDropdown);
+    setShowNotificationDropdown(false); // Close notification dropdown if open
+  }
+
+  function handleNotificationButton() {
+    setShowNotificationDropdown(!showNotificationDropdown);
+    setShowUserDropdown(false); // Close user dropdown if open
+  }
+
+  function handleMarkAsRead(notificationId) {
+    router.post(
+      route("notifications.markAsRead"),
+      { id: notificationId },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          fetchNotifications(); // Re-fetch to update read status
+        },
+      }
+    );
+  }
+
+  function handleMarkAllAsRead() {
+    router.post(
+      route("notifications.markAllAsRead"),
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          fetchNotifications(); // Re-fetch to update read status
+        },
+      }
+    );
+  }
+
   function handleLogout() {
     router.post("/logout");
   }
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-between px-6 py-4">
@@ -55,24 +108,79 @@ export default function Topbar() {
 
         <div className="flex items-center space-x-4">
           {/* <!-- Notifications --> */}
-          <button className="relative text-gray-500 hover:text-gray-700">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="relative">
+            <button
+              onClick={handleNotificationButton}
+              className="relative text-gray-500 hover:text-gray-700"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              ></path>
-            </svg>
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              3
-            </span>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                ></path>
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            <div
+              className={`absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 ${
+                !showNotificationDropdown && "hidden"
+              } z-50`}
+            >
+              <div className="py-2">
+                <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-800">Notifications</h3>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+                {notifications.length > 0 ? (
+                  notifications.slice(0, 5).map((notification) => (
+                    <Link
+                      key={notification.id}
+                      href={route("notifications.show", notification.id)}
+                      onClick={() => handleMarkAsRead(notification.id)}
+                      className={`block px-4 py-3 border-b border-gray-100 ${
+                        !notification.read_at ? "bg-blue-50 font-medium" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <p className="text-sm text-gray-800">{notification.data.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(notification.created_at).toLocaleString()}
+                      </p>
+                    </Link>
+                  ))
+                ) : (
+                  <p className="px-4 py-3 text-sm text-gray-500">No new notifications.</p>
+                )}
+                <div className="border-t border-gray-200 mt-2 pt-2">
+                  <Link
+                    href={route("notifications.index")}
+                    className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-100"
+                  >
+                    See All Notifications
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* <!-- User Menu --> */}
           <div className="relative">
@@ -81,7 +189,12 @@ export default function Topbar() {
               onClick={handleUserButton}
               className="flex items-center space-x-2 text-gray-700 hover:text-gray-900"
             >
-              <span className="hidden md:block">Admin User</span>
+              <img
+                className="h-8 w-8 rounded-full object-cover"
+                src={auth.user.profile_photo_url}
+                alt={auth.user.name}
+              />
+              <span className="hidden md:block">{auth.user.name}</span>
             </button>
 
             {/* User Dropdown */}
@@ -92,20 +205,20 @@ export default function Topbar() {
               } z-50`}
             >
               <div className="py-2">
-                <a
-                  href="#"
+                <Link
+                  href={route("profile.index")}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
                   {" "}
                   Profile{" "}
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  href={route("settings.index")}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
                   {" "}
                   Settings{" "}
-                </a>
+                </Link>
                 <div className="border-t border-gray-200 mt-2 pt-2">
                   <button
                     onClick={handleLogout}
@@ -124,3 +237,4 @@ export default function Topbar() {
     </header>
   );
 }
+

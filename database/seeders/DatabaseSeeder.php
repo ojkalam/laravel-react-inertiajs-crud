@@ -147,5 +147,6 @@ class DatabaseSeeder extends Seeder
         // Create additional reviews from users who haven't booked
         Review::factory(30)->create();
 
+        $this->call(NotificationSeeder::class);
     }
 }

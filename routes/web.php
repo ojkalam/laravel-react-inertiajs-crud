@@ -8,9 +8,9 @@ use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('admintemplate');
-});
+// Route::get('/', function () {
+//     return view('admintemplate');
+// });
 
 // Auth routes
 Route::get('/register', [AuthController::class, 'registerForm'])->name('registerForm');
@@ -46,4 +46,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('room-types', RoomTypeController::class);
     // Review routes
     Route::resource('reviews', ReviewController::class);
+
+    // User Profile and Settings routes
+    Route::get('profile', [App\Http\Controllers\UserController::class, 'profile'])->name('profile.index');
+    Route::get('settings', [App\Http\Controllers\UserController::class, 'settings'])->name('settings.index');
+    Route::put('profile', [App\Http\Controllers\UserController::class, 'update'])->name('profile.update');
+    Route::post('settings', [App\Http\Controllers\UserController::class, 'updateSettings'])->name('settings.update');
+
+    // Notification routes
+    Route::get('notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('notifications/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::get('notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show'])->name('notifications.show');
 });
