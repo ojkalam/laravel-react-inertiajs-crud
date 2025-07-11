@@ -22,8 +22,8 @@ export default function Topbar({ toggleSidebar }) {
       }
       if (
         showNotificationDropdown &&
-        !event.target.closest("button.relative.text-gray-500") &&
-        !event.target.closest("div.absolute.right-0.mt-2.w-80")
+        !event.target.closest("#notificationButton") &&
+        !event.target.closest("#notificationDropdown")
       ) {
         setShowNotificationDropdown(false);
       }
