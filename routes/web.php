@@ -8,9 +8,9 @@ use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/', function () {
-//     return view('admintemplate');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
 // Auth routes
 Route::get('/register', [AuthController::class, 'registerForm'])->name('registerForm');
