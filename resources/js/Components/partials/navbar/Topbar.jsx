@@ -4,12 +4,15 @@ import { Link, router, usePage } from "@inertiajs/react";
 export default function Topbar({ toggleSidebar }) {
   const { auth } = usePage().props;
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [showNotificationDropdown, setShowNotificationDropdown] =
+    useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [instanceName, setInstanceName] = useState("");
 
   useEffect(() => {
+    fetchInstanceName();
     fetchNotifications();
 
     const handleOutsideClick = (event) => {
@@ -36,11 +39,22 @@ export default function Topbar({ toggleSidebar }) {
     };
   }, [showUserDropdown, showNotificationDropdown]);
 
+  function fetchInstanceName() {
+    fetch(route("instance.name"))
+      .then((response) => response.json())
+      .then((data) => {
+        setInstanceName(data.instance);
+      })
+      .catch((error) => console.error("Error fetching instance name:", error));
+  }
+
   function fetchNotifications() {
     fetch(route("notifications.index"))
       .then((response) => response.json())
       .then((data) => {
-        setNotifications(data.unreadNotifications.concat(data.readNotifications));
+        setNotifications(
+          data.unreadNotifications.concat(data.readNotifications)
+        );
         setUnreadCount(data.unreadNotifications.length);
       })
       .catch((error) => console.error("Error fetching notifications:", error));
@@ -101,7 +115,10 @@ export default function Topbar({ toggleSidebar }) {
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center">
           {/* <!-- Mobile menu button --> */}
-          <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700 mr-4">
+          <button
+            onClick={toggleSidebar}
+            className="text-gray-500 hover:text-gray-700 mr-4"
+          >
             <svg
               className="w-6 h-6"
               fill="none"
@@ -141,6 +158,9 @@ export default function Topbar({ toggleSidebar }) {
               ></path>
             </svg>
           </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <strong>{instanceName}</strong>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -197,17 +217,23 @@ export default function Topbar({ toggleSidebar }) {
                       href={route("notifications.show", notification.id)}
                       onClick={() => handleMarkAsRead(notification.id)}
                       className={`block px-4 py-3 border-b border-gray-100 ${
-                        !notification.read_at ? "bg-blue-50 font-medium" : "hover:bg-gray-50"
+                        !notification.read_at
+                          ? "bg-blue-50 font-medium"
+                          : "hover:bg-gray-50"
                       }`}
                     >
-                      <p className="text-sm text-gray-800">{notification.data.message}</p>
+                      <p className="text-sm text-gray-800">
+                        {notification.data.message}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(notification.created_at).toLocaleString()}
                       </p>
                     </Link>
                   ))
                 ) : (
-                  <p className="px-4 py-3 text-sm text-gray-500">No new notifications.</p>
+                  <p className="px-4 py-3 text-sm text-gray-500">
+                    No new notifications.
+                  </p>
                 )}
                 <div className="border-t border-gray-200 mt-2 pt-2">
                   <Link
@@ -276,4 +302,3 @@ export default function Topbar({ toggleSidebar }) {
     </header>
   );
 }
-

@@ -12,6 +12,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/instance', function () {
+    $instanceName = file_get_contents(
+        'http://metadata.google.internal/computeMetadata/v1/instance/name',
+        false,
+        stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => 'Metadata-Flavor: Google',
+            ],
+        ]),
+    );
+
+    echo 'Instance Name: ' . htmlspecialchars($instanceName);
+});
+
 // Auth routes
 Route::get('/register', [AuthController::class, 'registerForm'])->name('registerForm');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -23,6 +38,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::group(['middleware' => ['auth']], function () {
     //Dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/instance/name', [DashboardController::class, 'instanceName'])->name(name: 'instance.name');
 
     // Hotel routes
     Route::get('hotels', [HotelController::class, 'index'])->name('hotels.index');
